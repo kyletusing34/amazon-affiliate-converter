@@ -223,6 +223,47 @@
             background: var(--color-success);
         }
 
+                .result-button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .result-button-group button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-copy {
+            background: var(--color-primary);
+            color: var(--color-bg);
+        }
+
+        .btn-copy:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-copy.copied {
+            background: var(--color-success);
+        }
+
+        .btn-open {
+            background: #1f2430;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+
+        .btn-open:hover {
+            background: var(--color-primary);
+            color: var(--color-bg);
+        }
+
         .message {
             font-size: 12px;
             margin-top: 8px;
@@ -344,8 +385,10 @@
         <div id="resultBox" class="result-box">
             <div class="result-label">Your Affiliate Link</div>
             <div class="result-content" id="resultContent"></div>
-            <button class="copy-btn" onclick="copyToClipboard()">Copy Link</button>
-            <div id="copyMessage" class="message"></div>
+                        <div class="result-button-group">
+                <button class="btn-copy" onclick="copyToClipboard()">Copy Link</button>
+                <button class="btn-open" onclick="openAffiliateLink()">Open Link</button>
+                        </div><div id="copyMessage" class="message"></div>
         </div>
 
         <div class="faq">
@@ -477,8 +520,7 @@
             const link = resultContent.dataset.link;
 
             navigator.clipboard.writeText(link).then(() => {
-                const copyBtn = document.querySelector('.copy-btn');
-                const originalText = copyBtn.textContent;
+            const copyBtn = document.querySelector('.btn-copy');                const originalText = copyBtn.textContent;
 
                 copyBtn.textContent = '✓ Copied!';
                 copyBtn.classList.add('copied');
@@ -495,6 +537,26 @@
                 showCopyError('Failed to copy. Try manually selecting and copying.');
             });
         }
+
+                function openAffiliateLink() {
+            const resultContent = document.getElementById('resultContent');
+            const link = resultContent.dataset.link;
+
+            if (link) {
+                // Check if user is on mobile (iOS or Android)
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+                const isAndroid = /android/i.test(userAgent);
+
+                if (isIOS || isAndroid) {
+                    // Try to open in Amazon app first, fallback to browser
+                    window.location.href = link;
+                } else {
+                    // Desktop: open in new tab
+                    window.open(link, '_blank');
+                }
+            }
+                }
 
         function showError(message) {
             const resultBox = document.getElementById('resultBox');
