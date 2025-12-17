@@ -5,31 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amazon Affiliate Link Converter | Kyle Trading</title>
     <style>
-        :root {
-            --color-primary: #218091;
-            --color-primary-hover: #1a6473;
-            --color-bg: #f5f5f5;
-            --color-surface: #ffffff;
-            --color-text: #1f2121;
-            --color-text-secondary: #626c70;
-            --color-success: #218091;
-            --color-error: #c01525;
-            --color-border: #e8eaea;
-        }
+       :root {
+    --color-primary: #00ff7f;        /* neon green */
+    --color-primary-hover: #19c76b;
+    --color-bg: #050608;             /* near-black background */
+    --color-surface: #101218;        /* dark surface */
+    --color-text: #f5f7fa;           /* light text */
+    --color-text-secondary: #8b93a5; /* muted gray */
+    --color-success: #00ff7f;
+    --color-error: #ff4b5c;
+    --color-border: #1f2430;
+}
 
         * {
             box-sizing: border-box;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--color-bg);
-            color: var(--color-text);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-
+      body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #111827 0, #020308 55%, #000000 100%);
+    color: var(--color-text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
         .container {
             max-width: 700px;
             margin: 0 auto;
@@ -118,9 +116,15 @@
         }
 
         .btn-primary {
-            background: var(--color-primary);
-            color: white;
-        }
+    background: var(--color-primary);
+    color: #050608;
+    box-shadow: 0 0 18px rgba(0, 255, 127, 0.35);
+}
+
+.result-box.success {
+    box-shadow: 0 0 24px rgba(0, 255, 127, 0.25);
+}
+
 
         .btn-primary:hover {
             background: var(--color-primary-hover);
@@ -147,14 +151,12 @@
             cursor: not-allowed;
         }
 
-        .result-box {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: none;
-        }
+        .result-box,
+.info-box {
+    background: linear-gradient(135deg, #070a0f 0%, #10141f 100%);
+    border: 1px solid #1f2937;
+}
+
 
         .result-box.show {
             display: block;
