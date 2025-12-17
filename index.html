@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Affiliate Link Converter | Kyle Trading</title>
+    <style>
+        :root {
+            --color-primary: #218091;
+            --color-primary-hover: #1a6473;
+            --color-bg: #f5f5f5;
+            --color-surface: #ffffff;
+            --color-text: #1f2121;
+            --color-text-secondary: #626c70;
+            --color-success: #218091;
+            --color-error: #c01525;
+            --color-border: #e8eaea;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .tagline {
+            color: var(--color-text-secondary);
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .info-box {
+            background: #f0f8f9;
+            border-left: 4px solid var(--color-primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .info-box strong {
+            color: var(--color-text);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(33, 128, 141, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-box {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box.success {
+            border-left: 4px solid var(--color-success);
+        }
+
+        .result-box.error {
+            border-left: 4px solid var(--color-error);
+        }
+
+        .result-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .result-content {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 4px;
+            word-break: break-all;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: var(--color-text);
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .copy-btn.copied {
+            background: var(--color-success);
+        }
+
+        .message {
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .faq {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid var(--color-border);
+        }
+
+        .faq h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+        }
+
+        .faq-question {
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .faq-question::before {
+            content: "▶";
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .faq-question.open::before {
+            transform: rotate(90deg);
+        }
+
+        .faq-answer {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            display: none;
+            padding-left: 22px;
+        }
+
+        .faq-answer.show {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-bottom: 20px;
+            color: var(--color-text-secondary);
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Amazon Affiliate Converter</h1>
+            <p class="tagline">Convert Amazon links to affiliate links instantly</p>
+        </header>
+
+        <div class="info-box">
+            <strong>How it works:</strong>
+            Paste any Amazon product link below, and I'll instantly convert it to an affiliate link. Share it with your network—they get the exact same product, you earn a commission. Zero cost to them.
+        </div>
+
+        <div class="form-group">
+            <label for="amazonUrl">Paste your Amazon product link:</label>
+            <input 
+                type="url" 
+                id="amazonUrl" 
+                placeholder="https://www.amazon.com/dp/B0..." 
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="convertLink()">Convert Link</button>
+            <button class="btn-secondary" onclick="clearForm()">Clear</button>
+        </div>
+
+        <div id="resultBox" class="result-box">
+            <div class="result-label">Your Affiliate Link</div>
+            <div class="result-content" id="resultContent"></div>
+            <button class="copy-btn" onclick="copyToClipboard()">Copy Link</button>
+            <div id="copyMessage" class="message"></div>
+        </div>
+
+        <div class="faq">
+            <h2>FAQ</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Is this legal?
+                </div>
+                <div class="faq-answer">
+                    Yes! This follows Amazon Associates terms perfectly. Your network is choosing to support you by using your affiliate link for purchases they were already planning to make. No incentives involved—it's just sharing.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Does the product cost more?
+                </div>
+                <div class="faq-answer">
+                    No. The customer pays the exact same price. The commission comes from Amazon's margin, not the customer's pocket. It's a true win-win.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How long does the link work?
+                </div>
+                <div class="faq-answer">
+                    Amazon's tracking cookie lasts 24 hours. Your network has 24 hours from clicking the link to complete their purchase for it to count toward your commission.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Can I use shortened links?
+                </div>
+                <div class="faq-answer">
+                    Yes. This converter works with any Amazon URL format—long links, short links (amzn.to), mobile links, or links from search results.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    What if the link doesn't work?
+                </div>
+                <div class="faq-answer">
+                    Make sure you're pasting a valid Amazon product link (should contain either /dp/ or /gp/product/ or /gp/aw/d/). If you're still having issues, check that the original product is still available on Amazon.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built by Kyle | Market Insights & Trading Trends</p>
+        </footer>
+    </div>
+
+    <script>
+        function extractASIN(url) {
+            if (!url || url.trim() === '') {
+                showError('Please enter a valid Amazon URL');
+                return null;
+            }
+
+            try {
+                const urlObj = new URL(url);
+                const domain = urlObj.hostname;
+
+                // Check if it's an Amazon domain
+                if (!domain.includes('amazon.')) {
+                    showError('This doesn\'t look like an Amazon link. Please paste a link from amazon.com');
+                    return null;
+                }
+
+                // Patterns to match ASIN
+                const patterns = [
+                    /\/dp\/([A-Z0-9]{10})/,           // Standard: /dp/ASIN
+                    /\/gp\/product\/([A-Z0-9]{10})/,  // Alternative: /gp/product/ASIN
+                    /\/gp\/aw\/d\/([A-Z0-9]{10})/,    // Mobile: /gp/aw/d/ASIN
+                ];
+
+                for (let pattern of patterns) {
+                    const match = urlObj.pathname.match(pattern);
+                    if (match) {
+                        return match[1];
+                    }
+                }
+
+                showError('Could not extract product ID from this link. Make sure it\'s a direct Amazon product link.');
+                return null;
+
+            } catch (e) {
+                showError('Please enter a valid URL starting with http:// or https://');
+                return null;
+            }
+        }
+
+        function convertLink() {
+            const urlInput = document.getElementById('amazonUrl');
+            const url = urlInput.value;
+
+            // Clear previous messages
+            clearMessages();
+
+            const asin = extractASIN(url);
+            if (!asin) return;
+
+            // Your Associates tag
+            const tag = 'ktusing-20';
+
+            // Generate the affiliate link
+            const affiliateLink = `https://amazon.com/dp/${asin}/?tag=${tag}`;
+
+            // Display result
+            displayResult(affiliateLink);
+        }
+
+        function displayResult(link) {
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+
+            resultContent.textContent = link;
+            resultContent.dataset.link = link;
+
+            resultBox.classList.add('show', 'success');
+        }
+
+        function copyToClipboard() {
+            const resultContent = document.getElementById('resultContent');
+            const link = resultContent.dataset.link;
+
+            navigator.clipboard.writeText(link).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.textContent;
+
+                copyBtn.textContent = '✓ Copied!';
+                copyBtn.classList.add('copied');
+
+                const message = document.getElementById('copyMessage');
+                message.textContent = 'Link copied to clipboard!';
+                message.classList.add('show', 'success');
+
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                showCopyError('Failed to copy. Try manually selecting and copying.');
+            });
+        }
+
+        function showError(message) {
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+
+            resultContent.textContent = message;
+            resultBox.classList.add('show', 'error');
+            resultBox.classList.remove('success');
+        }
+
+        function showCopyError(message) {
+            const copyMessage = document.getElementById('copyMessage');
+            copyMessage.textContent = message;
+            copyMessage.classList.add('show', 'error');
+        }
+
+        function clearMessages() {
+            const resultBox = document.getElementById('resultBox');
+            const copyMessage = document.getElementById('copyMessage');
+
+            resultBox.classList.remove('show', 'success', 'error');
+            copyMessage.classList.remove('show', 'success', 'error');
+        }
+
+        function clearForm() {
+            document.getElementById('amazonUrl').value = '';
+            clearMessages();
+            document.getElementById('amazonUrl').focus();
+        }
+
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            element.classList.toggle('open');
+            answer.classList.toggle('show');
+        }
+
+        // Allow Enter key to convert
+        document.getElementById('amazonUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                convertLink();
+            }
+        });
+
+        // Focus on load
+        window.addEventListener('load', () => {
+            document.getElementById('amazonUrl').focus();
+        });
+    </script>
+</body>
+</html>
