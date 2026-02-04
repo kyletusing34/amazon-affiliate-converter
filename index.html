@@ -524,25 +524,56 @@
             }
         }
 
-        function convertLink() {
-            const urlInput = document.getElementById('amazonUrl');
-            const url = urlInput.value;
+// Detect Amazon-style short link hosts
+function isShortAmazonLink(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    return host === 'a.co' || host === 'amzn.to';
+  } catch (e) {
+    return false;
+  }
+}
 
-            // Clear previous messages
-            clearMessages();
+// Resolve short URL via Netlify Function, then convert
+async function resolveAndConvert(url) {
+  clearMessages();
 
-            const asin = extractASIN(url);
-            if (!asin) return;
+  // If it's a short Amazon link, resolve it first
+  if (isShortAmazonLink(url)) {
+    try {
+      const resp = await fetch(
+        `/.netlify/functions/resolve-short-url?url=${encodeURIComponent(url)}`
+      );
+      if (!resp.ok) {
+        showError('I had trouble expanding that short Amazon link. Try opening it once, then paste the full product URL.');
+        return;
+      }
+      const data = await resp.json();
+      if (!data.finalUrl) {
+        showError('I could not find the full Amazon link behind that short URL.');
+        return;
+      }
+      url = data.finalUrl;
+    } catch (err) {
+      showError('Something went wrong expanding that short link. Please try again or paste the full product page URL.');
+      return;
+    }
+  }
 
-            // Your Associates tag
-            const tag = 'ktusing-20';
+  const asin = extractASIN(url);
+  if (!asin) return;
 
-            // Generate the affiliate link
-            const affiliateLink = `https://www.amazon.com/dp/${asin}/ref=nosim?tag=${tag}`;
-
-            // Display result
-            displayResult(affiliateLink);
-        }
+  const tag = 'ktusing-20';
+  const affiliateLink = `https://www.amazon.com/dp/${asin}/ref=nosim?tag=${tag}`;
+  displayResult(affiliateLink);
+}
+        
+function convertLink() {
+  const urlInput = document.getElementById('amazonUrl');
+  const url = urlInput.value;
+  resolveAndConvert(url);
+}
 
         function displayResult(link) {
             const resultBox = document.getElementById('resultBox');
@@ -643,34 +674,28 @@
         window.addEventListener('load', () => {
             document.getElementById('amazonUrl').focus();
         });
-        // Auto-convert on paste and optionally auto-open
+        // Auto-convert on paste and optionally auto-open (with short-link support)
 (function setupAutoConvertOnPaste() {
   const input = document.getElementById('amazonUrl');
   const autoOpenToggle = document.getElementById('autoOpenToggle');
-
   if (!input) return;
 
   input.addEventListener('paste', (event) => {
     // Let the browser paste first
-    setTimeout(() => {
+    setTimeout(async () => {
       const value = input.value.trim();
       if (!value) return;
 
       // Only attempt if it looks like a URL
       if (!/^https?:\/\//i.test(value)) return;
 
-      // Run normal conversion
-      clearMessages();
-      const asin = extractASIN(value);
-      if (!asin) return;
+      // Use the same resolver pipeline as the main button
+      await resolveAndConvert(value);
 
-      const tag = 'ktusing-20';
-      const affiliateLink = `https://www.amazon.com/dp/${asin}/ref=nosim?tag=${tag}`;
-
-      displayResult(affiliateLink);
-
-      // If toggle is on, auto-open using the existing logic
-      if (autoOpenToggle && autoOpenToggle.checked) {
+      // If toggle is on and we have a link, auto-open
+      const resultContent = document.getElementById('resultContent');
+      const link = resultContent && resultContent.dataset.link;
+      if (autoOpenToggle && autoOpenToggle.checked && link) {
         openAffiliateLink();
       }
     }, 0);
