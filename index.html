@@ -588,67 +588,36 @@
             affUrl.searchParams.set("tag", AFFILIATE_TAG);
             return affUrl.toString();
         }
+// ✅ Use Netlify function to resolve a.co / amzn.to / other short URLs
+async function resolveIfShortAmazon(url) {
+  try {
+    const u = new URL(url);
 
-        // ✅ ENHANCED: Now properly resolves Amazon short links (a.co)
-        async function resolveIfShortAmazon(url) {
-            try {
-                const u = new URL(url);
-                
-                // Check if it's an Amazon short link (a.co or amzn.to)
-                if (u.hostname.includes("a.co") || u.hostname.includes("amzn.to")) {
-                    // Use a CORS proxy or attempt direct fetch
-                    const response = await fetch(url, { 
-                        method: "HEAD", 
-                        redirect: "follow",
-                        mode: "no-cors"
-                    });
-                    
-                    // If fetch doesn't give us the final URL, try alternative approach
-                    if (response.url && response.url !== url) {
-                        return response.url;
-                    }
-                    
-                    // Fallback: create iframe to detect redirect
-                    return await resolveViaIframe(url);
-                }
-                
-                return url;
-            } catch (e) {
-                console.error("Error resolving short link:", e);
-                return url;
-            }
-        }
+    // If it's already a normal Amazon domain, skip resolution
+    if (u.hostname.includes("amazon.")) {
+      return url;
+    }
 
-        // Helper function to resolve short links via iframe
-        function resolveViaIframe(shortUrl) {
-            return new Promise((resolve) => {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                
-                const timeout = setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    resolve(shortUrl); // fallback to original
-                }, 3000);
-                
-                iframe.onload = () => {
-                    try {
-                        const finalUrl = iframe.contentWindow.location.href;
-                        clearTimeout(timeout);
-                        document.body.removeChild(iframe);
-                        resolve(finalUrl);
-                    } catch (e) {
-                        // Cross-origin blocked, try parsing from iframe src
-                        clearTimeout(timeout);
-                        document.body.removeChild(iframe);
-                        resolve(shortUrl);
-                    }
-                };
-                
-                iframe.src = shortUrl;
-                document.body.appendChild(iframe);
-            });
-        }
+    // For a.co, amzn.to, etc. call Netlify function
+    const fnUrl = `/.netlify/functions/resolve-short-url?url=${encodeURIComponent(url)}`;
+    const res = await fetch(fnUrl);
 
+    if (!res.ok) {
+      console.error("resolve-short-url function error", res.status);
+      return url;
+    }
+
+    const data = await res.json();
+    if (data && data.resolvedUrl) {
+      return data.resolvedUrl;
+    }
+
+    return url;
+  } catch (e) {
+    console.error("Error resolving short link:", e);
+    return url;
+  }
+}
         async function convertLink(autoFromPaste = false) {
             const input = document.getElementById("amazonUrl");
             const raw = input.value.trim();
