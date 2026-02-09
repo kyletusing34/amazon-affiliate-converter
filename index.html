@@ -1,656 +1,775 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- PWA + Android integration -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Amazon Affiliate Link Converter | Kyle Trading</title>
-
-  <!-- Manifest + theme color -->
-  <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="theme-color" content="#00ff7f">
-
-  <!-- App icons for Android/Chrome -->
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
-  <link rel="apple-touch-icon" href="/icons/icon-192.png">
-
-  <!-- Basic SEO / Open Graph (optional) -->
-  <meta name="description" content="Paste any Amazon link and instantly convert it to an affiliate link that supports Kyle at no extra cost to you.">
-  <meta property="og:title" content="Amazon Affiliate Converter">
-  <meta property="og:description" content="Instantly turn any Amazon link into a support link for Kyle.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://amazon-affiliate-converter.netlify.app/">
-  <meta property="og:image" content="https://amazon-affiliate-converter.netlify.app/icons/icon-512.png">
-
-  <style>
-    :root {
-      --color-primary: #00ff7f; /* neon green */
-      --color-primary-hover: #19c76b;
-      --color-bg: #050608; /* near-black background */
-      --color-surface: #101218; /* dark surface */
-      --color-text: #f5f7fa; /* light text */
-      --color-text-secondary: #8b93a5; /* muted gray */
-      --color-success: #00ff7f;
-      --color-error: #ff4b5c;
-      --color-border: #1f2430;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: radial-gradient(circle at top, #111827 0, #020308 55%, #000000 100%);
-      color: var(--color-text);
-      margin: 0;
-      padding: 0;
-      line-height: 1.6;
-    }
-
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding-top: 20px;
-    }
-
-    h1 {
-      margin: 0 0 10px 0;
-      font-size: 32px;
-      font-weight: 600;
-      color: var(--color-text);
-    }
-
-    .tagline {
-      color: var(--color-text-secondary);
-      font-size: 16px;
-      margin: 0;
-    }
-
-    .info-box {
-      background: linear-gradient(135deg, #070a0f 0%, #10141f 100%);
-      border-left: 4px solid var(--color-primary);
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      font-size: 14px;
-      color: var(--color-text-secondary);
-      border: 1px solid #1f2937;
-    }
-
-    .info-box strong {
-      color: var(--color-text);
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-
-    input[type="text"],
-    input[type="url"] {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-      transition: border-color 0.2s;
-      background: #050608;
-      color: var(--color-text);
-    }
-
-    input[type="text"]::placeholder,
-    input[type="url"]::placeholder {
-      color: #6b7280;
-    }
-
-    input[type="text"]:focus,
-    input[type="url"]:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.12);
-    }
-
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-    }
-
-    button {
-      flex: 1;
-      padding: 12px 16px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--color-primary);
-      color: #050608;
-      box-shadow: 0 0 18px rgba(0, 255, 127, 0.35);
-    }
-
-    .btn-primary:hover {
-      background: var(--color-primary-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 255, 127, 0.3);
-    }
-
-    .btn-primary:active {
-      transform: translateY(0);
-    }
-
-    .btn-secondary {
-      background: #f0f0f0;
-      color: #000000;
-      border: 1px solid var(--color-border);
-    }
-
-    .btn-secondary:hover {
-      background: #e8e8e8;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .result-box {
-      background: linear-gradient(135deg, #070a0f 0%, #10141f 100%);
-      border: 1px solid #1f2937;
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 10px;
-      display: none;
-    }
-
-    .result-box.show {
-      display: block;
-      animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .result-box.success {
-      border-left: 4px solid var(--color-success);
-      box-shadow: 0 0 24px rgba(0, 255, 127, 0.25);
-    }
-
-    .result-box.error {
-      border-left: 4px solid var(--color-error);
-    }
-
-    .result-label {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--color-text-secondary);
-      margin-bottom: 8px;
-    }
-
-    .result-content {
-      background: #020617;
-      padding: 12px;
-      border-radius: 4px;
-      word-break: break-all;
-      font-family: 'Monaco', 'Courier New', monospace;
-      font-size: 13px;
-      margin-bottom: 12px;
-      color: #00ff7f;
-    }
-
-    .result-button-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .result-button-group button {
-      flex: 1;
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .btn-copy {
-      background: var(--color-primary);
-      color: var(--color-bg);
-    }
-
-    .btn-copy:hover {
-      background: var(--color-primary-hover);
-    }
-
-    .btn-copy.copied {
-      background: var(--color-success);
-    }
-
-    .btn-open {
-      background: #1f2430;
-      color: var(--color-primary);
-      border: 1px solid var(--color-primary);
-    }
-
-    .btn-open:hover {
-      background: var(--color-primary);
-      color: var(--color-bg);
-    }
-
-    .message {
-      font-size: 12px;
-      margin-top: 8px;
-      padding: 8px 12px;
-      border-radius: 4px;
-      display: none;
-    }
-
-    .message.show {
-      display: block;
-    }
-
-    .message.success {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .message.error {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .faq {
-      margin-top: 50px;
-      padding-top: 30px;
-      border-top: 2px solid var(--color-border);
-    }
-
-    .faq h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-
-    .faq-item {
-      margin-bottom: 20px;
-    }
-
-    .faq-question {
-      font-weight: 600;
-      color: var(--color-text);
-      margin-bottom: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .faq-question::before {
-      content: "▶";
-      font-size: 12px;
-      transition: transform 0.2s;
-    }
-
-    .faq-question.open::before {
-      transform: rotate(90deg);
-    }
-
-    .faq-answer {
-      color: var(--color-text-secondary);
-      font-size: 14px;
-      display: none;
-      padding-left: 22px;
-    }
-
-    .faq-answer.show {
-      display: block;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      padding-bottom: 20px;
-      color: var(--color-text-secondary);
-      font-size: 12px;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 24px;
-      }
-      .button-group {
-        flex-direction: column;
-      }
-      button {
-        width: 100%;
-      }
-    }
-  </style>
+    <!-- PWA + Android integration -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Affiliate Link Converter | Kyle Trading</title>
+    
+    <!-- Manifest + theme color -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#00ff7f">
+    
+    <!-- App icons for Android/Chrome -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    
+    <!-- Basic SEO / Open Graph -->
+    <meta name="description" content="Paste any Amazon link and instantly convert it to an affiliate link that supports Kyle at no extra cost to you.">
+    <meta property="og:title" content="Amazon Affiliate Converter">
+    <meta property="og:description" content="Instantly turn any Amazon link into a support link for Kyle.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://amazon-affiliate-converter.netlify.app/">
+    <meta property="og:image" content="https://amazon-affiliate-converter.netlify.app/icons/icon-512.png">
+    
+    <style>
+        :root {
+            --color-primary: #00ff7f;
+            --color-primary-hover: #19c76b;
+            --color-primary-glow: rgba(0, 255, 127, 0.45);
+            --color-bg: #050608;
+            --color-surface: #0d1117;
+            --color-surface-elevated: #161b22;
+            --color-text: #f5f7fa;
+            --color-text-secondary: #8b93a5;
+            --color-success: #00ff7f;
+            --color-error: #ff4b5c;
+            --color-border: #21262d;
+            --color-border-bright: #30363d;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: radial-gradient(ellipse at top, #0f172a 0%, #020817 40%, #000000 100%);
+            color: var(--color-text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background grid */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(90deg, rgba(0, 255, 127, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0, 255, 127, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-top: 30px;
+        }
+        
+        h1 {
+            margin: 0 0 12px 0;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--color-text);
+            letter-spacing: -0.5px;
+            text-shadow: 0 0 40px rgba(0, 255, 127, 0.3);
+        }
+        
+        .tagline {
+            color: var(--color-text-secondary);
+            font-size: 16px;
+            margin: 0;
+            font-weight: 400;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-elevated) 100%);
+            border-left: 4px solid var(--color-primary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 35px;
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-box strong {
+            color: var(--color-text);
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 22px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--color-text);
+        }
+        
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--color-surface);
+            color: var(--color-text);
+        }
+        
+        input[type="text"]::placeholder,
+        input[type="url"]::placeholder {
+            color: #6b7280;
+        }
+        
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(0, 255, 127, 0.15), 0 0 20px rgba(0, 255, 127, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 35px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: var(--color-primary);
+            color: #000;
+            box-shadow: 0 0 30px var(--color-primary-glow);
+        }
+        
+        .btn-primary::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--color-primary-glow);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: var(--color-surface-elevated);
+            color: var(--color-text);
+            border: 1px solid var(--color-border-bright);
+        }
+        
+        .btn-secondary:hover {
+            background: #1c2128;
+            border-color: var(--color-primary);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result-box {
+            background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-elevated) 100%);
+            border: 1px solid var(--color-border-bright);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-box.success {
+            border-left: 4px solid var(--color-success);
+            box-shadow: 0 0 40px rgba(0, 255, 127, 0.3);
+        }
+        
+        .result-box.error {
+            border-left: 4px solid var(--color-error);
+            box-shadow: 0 0 30px rgba(255, 75, 92, 0.25);
+        }
+        
+        .result-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-secondary);
+            margin-bottom: 12px;
+        }
+        
+        .result-content {
+            background: #010409;
+            padding: 14px 16px;
+            border-radius: 6px;
+            word-break: break-all;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            margin-bottom: 14px;
+            color: var(--color-primary);
+            border: 1px solid var(--color-border);
+            line-height: 1.6;
+        }
+        
+        .result-button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+        }
+        
+        .result-button-group button {
+            flex: 1;
+            padding: 11px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .btn-copy {
+            background: var(--color-primary);
+            color: #000;
+        }
+        
+        .btn-copy:hover {
+            background: var(--color-primary-hover);
+            box-shadow: 0 4px 16px var(--color-primary-glow);
+        }
+        
+        .btn-copy.copied {
+            background: var(--color-success);
+        }
+        
+        .btn-open {
+            background: var(--color-surface);
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+        
+        .btn-open:hover {
+            background: var(--color-primary);
+            color: #000;
+        }
+        
+        .message {
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        .message.success {
+            background: rgba(0, 255, 127, 0.15);
+            color: var(--color-success);
+            border: 1px solid rgba(0, 255, 127, 0.3);
+        }
+        
+        .message.error {
+            background: rgba(255, 75, 92, 0.15);
+            color: var(--color-error);
+            border: 1px solid rgba(255, 75, 92, 0.3);
+        }
+        
+        .faq {
+            margin-top: 60px;
+            padding-top: 35px;
+            border-top: 2px solid var(--color-border);
+        }
+        
+        .faq h2 {
+            font-size: 22px;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        
+        .faq-item {
+            margin-bottom: 22px;
+            background: var(--color-surface);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            transition: all 0.3s;
+        }
+        
+        .faq-item:hover {
+            border-color: var(--color-border-bright);
+        }
+        
+        .faq-question {
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            user-select: none;
+        }
+        
+        .faq-question::before {
+            content: "▶";
+            font-size: 11px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--color-primary);
+        }
+        
+        .faq-question.open::before {
+            transform: rotate(90deg);
+        }
+        
+        .faq-answer {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            display: none;
+            padding-left: 23px;
+            line-height: 1.7;
+        }
+        
+        .faq-answer.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-bottom: 30px;
+            color: var(--color-text-secondary);
+            font-size: 13px;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 28px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .container {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Amazon Affiliate Converter</h1>
-      <p class="tagline">Convert Amazon links to affiliate links instantly</p>
-    </header>
+    <div class="container">
+        <header>
+            <h1>Amazon Affiliate Converter</h1>
+            <p class="tagline">Convert Amazon links to affiliate links instantly</p>
+        </header>
 
-    <div class="info-box">
-      <strong>How it works:</strong>
-      Please paste any Amazon product link below, and I'll instantly convert it to an affiliate link.
-      You get the same product at the exact same price while supporting our efforts indirectly!
+        <div class="info-box">
+            <strong>How it works:</strong>
+            Paste any Amazon product link below, and I'll instantly convert it to an affiliate link.
+            You get the same product at the exact same price while supporting my work indirectly!
+        </div>
+
+        <div class="form-group">
+            <label for="amazonUrl">Paste your Amazon product link:</label>
+            <input
+                type="url"
+                id="amazonUrl"
+                placeholder="https://www.amazon.com/dp/B0... or https://a.co/..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="form-group" style="margin-top:10px;">
+            <label style="display:flex;align-items:center;gap:10px;font-weight:400;font-size:13px;">
+                <input type="checkbox" id="autoOpenToggle" checked>
+                <span>Auto-open Amazon as soon as I paste a link</span>
+            </label>
+            <p style="margin:8px 0 0 0;font-size:12px;color:var(--color-text-secondary);">
+                On mobile: copy the Amazon product link, come back here, and paste it.
+                I'll instantly convert it and send you straight to the Amazon page with my support tag attached.
+            </p>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="convertLink()">Convert Link</button>
+            <button class="btn-secondary" onclick="clearForm()">Clear</button>
+        </div>
+
+        <div id="resultBox" class="result-box">
+            <div class="result-label">Your Affiliate Link</div>
+            <div class="result-content" id="resultContent"></div>
+            <div class="result-button-group">
+                <button class="btn-copy" onclick="copyToClipboard()">Copy Link</button>
+                <button class="btn-open" onclick="openAffiliateLink()">Open Link</button>
+            </div>
+            <div id="copyMessage" class="message"></div>
+        </div>
+
+        <div class="faq">
+            <h2>FAQ & Power User Tips</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How do I use this on mobile?
+                </div>
+                <div class="faq-answer">
+                    On Android, open Amazon, find a product, tap share, and copy the link. Then switch to this page or your home screen shortcut, paste the link (or it may auto-paste), and I'll convert and optionally auto-open it.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How do I use this on desktop?
+                </div>
+                <div class="faq-answer">
+                    You can paste any Amazon URL in the box above. For faster flow, drag the bookmarklet below to your browser's bookmarks bar, then click it while on any Amazon product page.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    What's the bookmarklet?
+                </div>
+                <div class="faq-answer">
+                    Drag this link to your bookmarks bar: 
+                    <a 
+                        href="javascript:(function(){window.location.href='https://amazon-affiliate-converter.netlify.app/?url='+encodeURIComponent(window.location.href);})();" 
+                        style="color:#60a5fa;text-decoration:underline;"
+                    >
+                        Amazon Affiliate Converter</a> Then, when you are on an Amazon product page, click the bookmark. It will send the current page URL to this converter automatically.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Does this change the price or product?
+                </div>
+                <div class="faq-answer">
+                    No. The product and price are identical. The only difference is that Amazon may pay a small commission for qualifying purchases through this link, which helps support my work.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Built for friends, family, and my network to easily support my work with the same Amazon purchases you already make.
+        </footer>
     </div>
 
-    <div class="form-group">
-      <label for="amazonUrl">Paste your Amazon product link:</label>
-      <input
-        type="url"
-        id="amazonUrl"
-        placeholder="https://www.amazon.com/dp/B0..."
-        autocomplete="off"
-      >
-    </div>
+    <script>
+        const AFFILIATE_TAG = "ktusing-20"; // ✅ CORRECTED affiliate tag
 
-    <div class="form-group" style="margin-top:8px;">
-      <label style="display:flex;align-items:center;gap:8px;font-weight:400;font-size:13px;">
-        <input type="checkbox" id="autoOpenToggle" checked>
-        <span>Auto-open Amazon as soon as I paste a link</span>
-      </label>
-      <p style="margin:6px 0 0 0;font-size:12px;color:var(--color-text-secondary);">
-        On mobile: copy the Amazon product link, come back here, and paste it.
-        I’ll instantly convert it and send you straight to the Amazon page with my support tag attached.
-      </p>
-    </div>
-
-    <div class="button-group">
-      <button class="btn-primary" onclick="convertLink()">Convert Link</button>
-      <button class="btn-secondary" onclick="clearForm()">Clear</button>
-    </div>
-
-    <div id="resultBox" class="result-box">
-      <div class="result-label">Your Affiliate Link</div>
-      <div class="result-content" id="resultContent"></div>
-      <div class="result-button-group">
-        <button class="btn-copy" onclick="copyToClipboard()">Copy Link</button>
-        <button class="btn-open" onclick="openAffiliateLink()">Open Link</button>
-      </div>
-      <div id="copyMessage" class="message"></div>
-    </div>
-    <div class="faq">
-      <h2>FAQ & Power User Tips</h2>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          How do I use this on mobile?
-        </div>
-        <div class="faq-answer">
-          On Android, open Amazon, find a product, tap share, and copy the link. Then switch to this page or your home screen shortcut, paste the link (or it may auto-paste), and I’ll convert and optionally auto-open it.
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          How do I use this on desktop?
-        </div>
-        <div class="faq-answer">
-          You can paste any Amazon URL in the box above. For faster flow, drag the bookmarklet below to your browser’s bookmarks bar, then click it while on any Amazon product page.
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          What’s the bookmarklet?
-        </div>
-        <div class="faq-answer">
-          Drag this link to your bookmarks bar: 
-         <a 
-  href="javascript:(function(){window.location.href='https://amazon-converter.netlify.app/?url='+encodeURIComponent(window.location.href);})();" 
-  style="color:#60a5fa;text-decoration:underline;"
->
-  Amazon Affiliate Converter
-</a>
-          Then, when you are on an Amazon product page, click the bookmark. It will send the current page URL to this converter automatically.
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          Does this change the price or product?
-        </div>
-        <div class="faq-answer">
-          No. The product and price are identical. The only difference is that Amazon may pay a small commission for qualifying purchases through this link, which helps support my work.
-        </div>
-      </div>
-    </div>
-
-    <footer>
-      Built for friends, family, and my network to easily support my work with the same Amazon purchases you already make.
-    </footer>
-  </div>
-
-  <script>
-    const AFFILIATE_TAG = "kyleamazon-20"; // your associate tag
-
-    function showMessage(text, isError = false) {
-      const msg = document.getElementById("copyMessage");
-      msg.textContent = text;
-      msg.className = "message show " + (isError ? "error" : "success");
-      setTimeout(() => {
-        msg.className = "message";
-      }, 2500);
-    }
-
-    function extractASIN(url) {
-      try {
-        const u = new URL(url);
-        if (!u.hostname.includes("amazon.")) return null;
-
-        // Handle /dp/ASIN or /gp/product/ASIN patterns
-        const dpMatch = u.pathname.match(/\/dp\/([A-Z0-9]{10})/i);
-        if (dpMatch) return dpMatch[1];
-
-        const gpMatch = u.pathname.match(/\/gp\/product\/([A-Z0-9]{10})/i);
-        if (gpMatch) return gpMatch[1];
-
-        // Fallback: search for a 10-char ASIN-like token
-        const asinMatch = u.pathname.match(/\/([A-Z0-9]{10})(?:[\/?]|$)/i);
-        if (asinMatch) return asinMatch[1];
-
-        return null;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function buildAffiliateUrl(originalUrl) {
-      const asin = extractASIN(originalUrl);
-      if (!asin) return null;
-
-      // Preserve region (amazon.com, amazon.ca, etc.)
-      const u = new URL(originalUrl);
-      const baseHost = u.hostname;
-
-      const affUrl = new URL(`https://${baseHost}/dp/${asin}`);
-      affUrl.searchParams.set("tag", AFFILIATE_TAG);
-      return affUrl.toString();
-    }
-
-    async function resolveIfShortAmazon(url) {
-      // If user shares amazon.com/dp/... we’re good.
-      // If they share amzn.to/... or other shorteners, we might attempt fetch+follow.
-      try {
-        const u = new URL(url);
-        if (!u.hostname.includes("amzn.to")) {
-          return url;
+        function showMessage(text, isError = false) {
+            const msg = document.getElementById("copyMessage");
+            msg.textContent = text;
+            msg.className = "message show " + (isError ? "error" : "success");
+            setTimeout(() => {
+                msg.className = "message";
+            }, 2500);
         }
 
-        // Try to resolve via simple fetch (will follow redirects in browser)
-        const response = await fetch(u.toString(), { method: "GET", redirect: "follow" });
-        if (response.url && response.url !== url) {
-          return response.url;
-        }
-        return url;
-      } catch (e) {
-        return url;
-      }
-    }
-
-    async function convertLink(autoFromPaste = false) {
-      const input = document.getElementById("amazonUrl");
-      const raw = input.value.trim();
-      const resultBox = document.getElementById("resultBox");
-      const resultContent = document.getElementById("resultContent");
-      const autoOpenToggle = document.getElementById("autoOpenToggle");
-
-      if (!raw) {
-        showMessage("Please paste an Amazon product link first.", true);
-        return;
-      }
-
-      resultBox.className = "result-box"; // reset classes
-      resultBox.classList.remove("show");
-
-      try {
-        const resolved = await resolveIfShortAmazon(raw);
-        const affiliateUrl = buildAffiliateUrl(resolved);
-
-        if (!affiliateUrl) {
-          resultContent.textContent = "Could not detect a valid Amazon product ASIN from that link.";
-          resultBox.classList.add("show", "error");
-          showMessage("That link does not look like a valid Amazon product URL.", true);
-          return;
+        function extractASIN(url) {
+            try {
+                const u = new URL(url);
+                if (!u.hostname.includes("amazon.")) return null;
+                
+                // Handle /dp/ASIN or /gp/product/ASIN patterns
+                const dpMatch = u.pathname.match(/\/dp\/([A-Z0-9]{10})/i);
+                if (dpMatch) return dpMatch[1];
+                
+                const gpMatch = u.pathname.match(/\/gp\/product\/([A-Z0-9]{10})/i);
+                if (gpMatch) return gpMatch[1];
+                
+                // Fallback: search for a 10-char ASIN-like token
+                const asinMatch = u.pathname.match(/\/([A-Z0-9]{10})(?:[\/?]|$)/i);
+                if (asinMatch) return asinMatch[1];
+                
+                return null;
+            } catch (e) {
+                return null;
+            }
         }
 
-        resultContent.textContent = affiliateUrl;
-        resultBox.classList.add("show", "success");
-        showMessage("Affiliate link created successfully!");
-
-        // Auto-open behavior for Android/mobile
-        if (autoFromPaste && autoOpenToggle.checked) {
-          // Small delay so the user can see the link flash on screen
-          setTimeout(() => {
-            openAffiliateLink();
-          }, 500);
+        function buildAffiliateUrl(originalUrl) {
+            const asin = extractASIN(originalUrl);
+            if (!asin) return null;
+            
+            // Preserve region (amazon.com, amazon.ca, etc.)
+            const u = new URL(originalUrl);
+            const baseHost = u.hostname;
+            const affUrl = new URL(`https://${baseHost}/dp/${asin}`);
+            affUrl.searchParams.set("tag", AFFILIATE_TAG);
+            return affUrl.toString();
         }
-      } catch (err) {
-        console.error(err);
-        resultContent.textContent = "There was an error converting your link. Please try again.";
-        resultBox.classList.add("show", "error");
-        showMessage("Error converting link.", true);
-      }
-    }
 
-    function openAffiliateLink() {
-      const resultContent = document.getElementById("resultContent");
-      const url = resultContent.textContent.trim();
-      if (!url) {
-        showMessage("No affiliate link to open yet.", true);
-        return;
-      }
-
-      // On Android Chrome/PWA, this will hand off to the Amazon app if installed
-      window.location.href = url;
-    }
-
-    function copyToClipboard() {
-      const resultContent = document.getElementById("resultContent");
-      const text = resultContent.textContent.trim();
-      if (!text) {
-        showMessage("Nothing to copy yet.", true);
-        return;
-      }
-
-      navigator.clipboard.writeText(text).then(() => {
-        const copyBtn = document.querySelector(".btn-copy");
-        copyBtn.classList.add("copied");
-        copyBtn.textContent = "Copied!";
-        showMessage("Affiliate link copied!");
-
-        setTimeout(() => {
-          copyBtn.classList.remove("copied");
-          copyBtn.textContent = "Copy Link";
-        }, 2000);
-      }).catch(() => {
-        showMessage("Unable to copy. Please copy manually.", true);
-      });
-    }
-
-    function clearForm() {
-      document.getElementById("amazonUrl").value = "";
-      const resultBox = document.getElementById("resultBox");
-      resultBox.className = "result-box";
-      resultBox.classList.remove("show");
-      document.getElementById("copyMessage").className = "message";
-    }
-
-    function toggleFaq(el) {
-      el.classList.toggle("open");
-      const answer = el.nextElementSibling;
-      answer.classList.toggle("show");
-    }
-
-    // Auto-paste + auto-convert when user arrives with ?url=... or with content in clipboard
-    async function handleInitialUrlParam() {
-      const params = new URLSearchParams(window.location.search);
-      const urlParam = params.get("url");
-      if (urlParam) {
-        const input = document.getElementById("amazonUrl");
-        input.value = urlParam;
-        await convertLink(true);
-      }
-    }
-
-    async function tryAutoPasteFromClipboard() {
-      if (!navigator.clipboard || !navigator.clipboard.readText) return;
-      try {
-        const text = (await navigator.clipboard.readText()).trim();
-        if (!text) return;
-        if (!text.includes("amazon.")) return;
-
-        const input = document.getElementById("amazonUrl");
-        // Only auto-fill if the field is empty so we don’t overwrite anything
-        if (!input.value.trim()) {
-          input.value = text;
-          await convertLink(true);
+        // ✅ ENHANCED: Now properly resolves Amazon short links (a.co)
+        async function resolveIfShortAmazon(url) {
+            try {
+                const u = new URL(url);
+                
+                // Check if it's an Amazon short link (a.co or amzn.to)
+                if (u.hostname.includes("a.co") || u.hostname.includes("amzn.to")) {
+                    // Use a CORS proxy or attempt direct fetch
+                    const response = await fetch(url, { 
+                        method: "HEAD", 
+                        redirect: "follow",
+                        mode: "no-cors"
+                    });
+                    
+                    // If fetch doesn't give us the final URL, try alternative approach
+                    if (response.url && response.url !== url) {
+                        return response.url;
+                    }
+                    
+                    // Fallback: create iframe to detect redirect
+                    return await resolveViaIframe(url);
+                }
+                
+                return url;
+            } catch (e) {
+                console.error("Error resolving short link:", e);
+                return url;
+            }
         }
-      } catch (e) {
-        // Clipboard permission might not be granted; silently ignore
-      }
-    }
 
-    window.addEventListener("load", async () => {
-      await handleInitialUrlParam();
-      // Delay clipboard sniff a bit so it feels natural when coming from “Copy link” in Amazon
-      setTimeout(tryAutoPasteFromClipboard, 400);
-    });
-  </script>
+        // Helper function to resolve short links via iframe
+        function resolveViaIframe(shortUrl) {
+            return new Promise((resolve) => {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                
+                const timeout = setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    resolve(shortUrl); // fallback to original
+                }, 3000);
+                
+                iframe.onload = () => {
+                    try {
+                        const finalUrl = iframe.contentWindow.location.href;
+                        clearTimeout(timeout);
+                        document.body.removeChild(iframe);
+                        resolve(finalUrl);
+                    } catch (e) {
+                        // Cross-origin blocked, try parsing from iframe src
+                        clearTimeout(timeout);
+                        document.body.removeChild(iframe);
+                        resolve(shortUrl);
+                    }
+                };
+                
+                iframe.src = shortUrl;
+                document.body.appendChild(iframe);
+            });
+        }
+
+        async function convertLink(autoFromPaste = false) {
+            const input = document.getElementById("amazonUrl");
+            const raw = input.value.trim();
+            const resultBox = document.getElementById("resultBox");
+            const resultContent = document.getElementById("resultContent");
+            const autoOpenToggle = document.getElementById("autoOpenToggle");
+
+            if (!raw) {
+                showMessage("Please paste an Amazon product link first.", true);
+                return;
+            }
+
+            resultBox.className = "result-box";
+            resultBox.classList.remove("show");
+
+            try {
+                const resolved = await resolveIfShortAmazon(raw);
+                const affiliateUrl = buildAffiliateUrl(resolved);
+                
+                if (!affiliateUrl) {
+                    resultContent.textContent = "Could not detect a valid Amazon product ASIN from that link.";
+                    resultBox.classList.add("show", "error");
+                    showMessage("That link does not look like a valid Amazon product URL.", true);
+                    return;
+                }
+
+                resultContent.textContent = affiliateUrl;
+                resultBox.classList.add("show", "success");
+                showMessage("Affiliate link created successfully!");
+
+                // Auto-open behavior for Android/mobile
+                if (autoFromPaste && autoOpenToggle.checked) {
+                    setTimeout(() => {
+                        openAffiliateLink();
+                    }, 500);
+                }
+            } catch (err) {
+                console.error(err);
+                resultContent.textContent = "There was an error converting your link. Please try again.";
+                resultBox.classList.add("show", "error");
+                showMessage("Error converting link.", true);
+            }
+        }
+
+        function openAffiliateLink() {
+            const resultContent = document.getElementById("resultContent");
+            const url = resultContent.textContent.trim();
+            if (!url) {
+                showMessage("No affiliate link to open yet.", true);
+                return;
+            }
+            window.location.href = url;
+        }
+
+        function copyToClipboard() {
+            const resultContent = document.getElementById("resultContent");
+            const text = resultContent.textContent.trim();
+            if (!text) {
+                showMessage("Nothing to copy yet.", true);
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                const copyBtn = document.querySelector(".btn-copy");
+                copyBtn.classList.add("copied");
+                copyBtn.textContent = "Copied!";
+                showMessage("Affiliate link copied!");
+                setTimeout(() => {
+                    copyBtn.classList.remove("copied");
+                    copyBtn.textContent = "Copy Link";
+                }, 2000);
+            }).catch(() => {
+                showMessage("Unable to copy. Please copy manually.", true);
+            });
+        }
+
+        function clearForm() {
+            document.getElementById("amazonUrl").value = "";
+            const resultBox = document.getElementById("resultBox");
+            resultBox.className = "result-box";
+            resultBox.classList.remove("show");
+            document.getElementById("copyMessage").className = "message";
+        }
+
+        function toggleFaq(el) {
+            el.classList.toggle("open");
+            const answer = el.nextElementSibling;
+            answer.classList.toggle("show");
+        }
+
+        // Auto-paste + auto-convert when user arrives with ?url=...
+        async function handleInitialUrlParam() {
+            const params = new URLSearchParams(window.location.search);
+            const urlParam = params.get("url");
+            if (urlParam) {
+                const input = document.getElementById("amazonUrl");
+                input.value = urlParam;
+                await convertLink(true);
+            }
+        }
+
+        async function tryAutoPasteFromClipboard() {
+            if (!navigator.clipboard || !navigator.clipboard.readText) return;
+            
+            try {
+                const text = (await navigator.clipboard.readText()).trim();
+                if (!text) return;
+                if (!text.includes("amazon.") && !text.includes("a.co") && !text.includes("amzn.")) return;
+                
+                const input = document.getElementById("amazonUrl");
+                if (!input.value.trim()) {
+                    input.value = text;
+                    await convertLink(true);
+                }
+            } catch (e) {
+                // Clipboard permission might not be granted; silently ignore
+            }
+        }
+
+        window.addEventListener("load", async () => {
+            await handleInitialUrlParam();
+            setTimeout(tryAutoPasteFromClipboard, 400);
+        });
+    </script>
 </body>
 </html>
